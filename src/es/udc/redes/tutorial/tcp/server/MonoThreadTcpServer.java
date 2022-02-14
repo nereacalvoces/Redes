@@ -15,16 +15,16 @@ public class MonoThreadTcpServer {
         }
         try {
             // Create a server socket
-            
+            ServerSocket socket = new ServerSocket(Integer.parseInt(argv[0]));
             // Set a timeout of 300 secs
-            
+            socket.setSoTimeout(300000);
             while (true) {
                 // Wait for connections
-                
+                Socket socket1 = socket.accept();
                 // Set the input channel
-                
+                InputStream input = socket1.getInputStream();
                 // Set the output channel
-                
+                OutputStream output = socket1.getOutputStream();
                 // Receive the client message
                 
                 // Send response to the client
