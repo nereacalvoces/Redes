@@ -19,23 +19,21 @@ public class ServerThread extends Thread {
       // Set the input channel
       BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
       // Set the output channel
-      PrintWriter output = new PrintWriter(socket.getOutputStream());
+      PrintWriter output = new PrintWriter(socket.getOutputStream(),true);
       // Receive the message from the client
-      Scanner sc = new Scanner(System.in);
-      String line = null;
-      while(!"exit".equalsIgnoreCase(line)) {
-        line = sc.nextLine();
-        output.println(line);
-        output.flush();
+      String msg = input.readLine();
+      output.println(msg);
+      System.out.println("SERVER: Received " +msg+
+                         " from " + socket.getInetAddress().toString() +
+                         ":" + socket.getPort());
         // Sent the echo message to the client
-        System.out.println("SERVER: Sending " + line +
+        output.println(msg);
+        System.out.println("SERVER: Sending " + msg +
                 " to " + socket.getInetAddress().toString() +
                 ":" + socket.getPort());
-      }
       // Close the streams
         input.close();
         output.close();
-        sc.close();
     // Uncomment next catch clause after implementing the logic
      } catch (SocketTimeoutException e) {
      System.err.println("Nothing received in 300 secs");
