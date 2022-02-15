@@ -21,26 +21,26 @@ public class MonoThreadTcpServer {
             socketServidor.setSoTimeout(300000);
             while (true) {
                 // Wait for connections
-                Socket socket1 = socketServidor.accept();
+                Socket socket = socketServidor.accept();
                 // Set the input channel
-                BufferedReader input = new BufferedReader(new InputStreamReader(socket1.getInputStream()));
+                BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 // Set the output channel
-                PrintWriter output = new PrintWriter(socket1.getOutputStream(),true);
+                PrintWriter output = new PrintWriter(socket.getOutputStream(),true);
                 // Receive the client message
                 String msg = input.readLine();
                 output.println(msg);
                 System.out.println("SERVER: Received " + (msg) +
-                                    " from " + socket1.getInetAddress().toString() +
-                                    ":" + socket1.getPort());
+                                    " from " + socket.getInetAddress().toString() +
+                                    ":" + socket.getPort());
                 // Send response to the client
                 output.println(msg);
                 System.out.println("SERVER: Sending " + (msg) +
-                                    " to " + socket1.getInetAddress().toString() +
-                                    ":" + socket1.getPort());
+                                    " to " + socket.getInetAddress().toString() +
+                                    ":" + socket.getPort());
                 // Close the streams
                 input.close();
                 output.close();
-                socket1.close();
+                socket.close();
             }
         // Uncomment next catch clause after implementing the logic            
         } catch (SocketTimeoutException e) {
