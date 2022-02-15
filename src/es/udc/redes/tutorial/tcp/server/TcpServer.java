@@ -11,17 +11,17 @@ public class TcpServer {
       System.err.println("Format: es.udc.redes.tutorial.tcp.server.TcpServer <port>");
       System.exit(-1);
     }
-    ServerSocket socket = null;
+    ServerSocket socketServidor = null;
     try {
       // Create a server socket
-      socket = new ServerSocket(Integer.parseInt(argv[0]));
+      socketServidor = new ServerSocket(Integer.parseInt(argv[0]));
       // Set a timeout of 300 secs
-      socket.setSoTimeout(300000);
+      socketServidor.setSoTimeout(300000);
       while (true) {
         // Wait for connections
-        Socket socket1 = socket.accept();
+        Socket socket = socketServidor.accept();
         // Create a ServerThread object, with the new connection as parameter
-        ServerThread servidor = new ServerThread(socket1);
+        ServerThread servidor = new ServerThread(socket);
         // Initiate thread using the start() method
         servidor.start();
       }
@@ -33,7 +33,7 @@ public class TcpServer {
       e.printStackTrace();
      } finally{
 	    //Close the socket
-          socket.close();
+          socketServidor.close();
     }
   }
 }
