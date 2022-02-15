@@ -31,12 +31,13 @@ public class UdpServer {
                 // Prepare datagram to send response
                 InetAddress direccion = diagramRecibido.getAddress();
                 int puerto = diagramRecibido.getPort();
-                diagramRecibido = new DatagramPacket(buffer,buffer.length,direccion,puerto);
+                int length = diagramRecibido.getLength();
+                diagramRecibido = new DatagramPacket(buffer,length,direccion,puerto);
                 // Send response
                 datagrama.send(diagramRecibido);
                 System.out.println("SERVER: Sending "
-                        + new String (diagramRecibido.getData()) + " to "
-                        + diagramRecibido.getAddress().toString() + ":"
+                        + new String (diagramRecibido.getData(),0,diagramRecibido.getLength())
+                        + " to " + diagramRecibido.getAddress().toString() + ":"
                         + diagramRecibido.getPort());
             }
         // Uncomment next catch clause after implementing the logic
