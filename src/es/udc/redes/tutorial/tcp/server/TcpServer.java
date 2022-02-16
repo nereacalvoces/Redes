@@ -29,7 +29,7 @@ public class TcpServer {
      } catch (SocketTimeoutException e) {
       System.err.println("Nothing received in 300 secs");
     } catch (Exception e) {
-      System.err.println("Error: " + e.getMessage());
+      System.err.println("Error: " + e.getMessage()); 
       e.printStackTrace();
      } finally{
 	    //Close the socket
