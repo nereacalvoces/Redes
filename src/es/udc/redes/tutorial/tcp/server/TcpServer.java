@@ -25,15 +25,15 @@ public class TcpServer {
         // Initiate thread using the start() method
         servidor.start();
       }
-    // Uncomment next catch clause after implementing the logic
-     } catch (SocketTimeoutException e) {
+      // Uncomment next catch clause after implementing the logic
+    } catch (SocketTimeoutException e) {
       System.err.println("Nothing received in 300 secs");
     } catch (Exception e) {
-      System.err.println("Error: " + e.getMessage()); 
+      System.err.println("Error: " + e.getMessage());
       e.printStackTrace();
-     } finally{
-	    //Close the socket
-          socketServidor.close();
+    } finally{
+      //Close the socket
+      socketServidor.close();
     }
   }
 }
