@@ -22,12 +22,10 @@ public class WebServer {
             System.out.println("Server started, listening for messages.");
             while(true) {
                 Socket client = serverSocket.accept();
-                System.out.println("Got new message\n");
                 InputStreamReader inputStreamReader = new InputStreamReader(client.getInputStream());
                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
                 StringBuilder requestBuilder = new StringBuilder();
-                String line;
-                line = bufferedReader.readLine();
+                String line = bufferedReader.readLine();
                 while (!line.isBlank()) {
                     requestBuilder.append(line).append("\r\n");
                     line = bufferedReader.readLine();
