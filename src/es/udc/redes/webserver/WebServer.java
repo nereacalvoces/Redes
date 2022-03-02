@@ -34,9 +34,7 @@ public class WebServer {
                 System.out.println(requestBuilder);
                 String[] parts = requestBuilder.toString().split(" ");
                 StringBuilder stringBuilder = new StringBuilder(parts[1]);
-                if(stringBuilder.charAt(0) == '/') {
-                    stringBuilder.deleteCharAt(0);
-                }
+                stringBuilder.insert(0,'.');
                 FileInputStream input = new FileInputStream(stringBuilder.toString());
                 int c;
                     OutputStream clientOutput = client.getOutputStream();
