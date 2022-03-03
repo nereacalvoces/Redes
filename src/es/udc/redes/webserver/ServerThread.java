@@ -25,9 +25,9 @@ public class ServerThread extends Thread {
                 file.insert(0, '.');
             FileInputStream input2 = new FileInputStream(file.toString());
             if (parts[0].equals("GET"))
-                processGet(input2,file);
+                processRequest(input2,file,true);
             if (parts[0].equals("HEAD"))
-                processHead(input2,file);
+                processRequest(input2,file,false);
         } catch (SocketTimeoutException e) {
             System.err.println("Nothing received in 300 secs");
         } catch (Exception e) {
@@ -41,7 +41,7 @@ public class ServerThread extends Thread {
             }
         }
     }
-    public void processGet(FileInputStream input, StringBuilder file) throws IOException {
+    public void processRequest(FileInputStream input, StringBuilder file,boolean writer) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
         Date date = new Date();
         OutputStream clientOutput = socket.getOutputStream();
@@ -51,24 +51,13 @@ public class ServerThread extends Thread {
         clientOutput.write(("Content-Length: "+input.getChannel().size()+"\r\n").getBytes());
         selectContentType(file,clientOutput);
         clientOutput.write(("\r\n").getBytes());
-        int c;
-        while ((c = input.read()) != -1)
-            clientOutput.write(c);
-        clientOutput.flush();
-        clientOutput.close();
-    }
-    public void processHead(FileInputStream input, StringBuilder file) throws IOException {
-        DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
-        Date date = new Date();
-        OutputStream clientOutput = socket.getOutputStream();
-        clientOutput.write(("HTTP/1.0 200 OK\r\n").getBytes());
-        clientOutput.write(("Date: " + dateFormat.format(date) + "\r\n").getBytes());
-        clientOutput.write(("Server: WebServer_695\r\n").getBytes());
-        clientOutput.write(("Content-Length: "+input.getChannel().size()+"\r\n").getBytes());
-        selectContentType(file,clientOutput);
-        clientOutput.write(("\r\n").getBytes());
-        clientOutput.flush();
-        clientOutput.close();
+        if (writer) {
+            int c;
+            while ((c = input.read()) != -1)
+                clientOutput.write(c);
+        }
+            clientOutput.flush();
+            clientOutput.close();
     }
     public void selectContentType(StringBuilder file,OutputStream output) throws IOException {
         String[] particion = file.toString().split("\\.");
