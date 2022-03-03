@@ -19,15 +19,23 @@ public class ServerThread extends Thread {
         try {
             BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String msg = input.readLine();
-            String[] parts = msg.split(" ");
-            StringBuilder file = new StringBuilder(parts[1]);
-            if (file.charAt(0) == '/')
-                file.insert(0, '.');
-            FileInputStream input2 = new FileInputStream(file.toString());
-            if (parts[0].equals("GET"))
-                processRequest(input2,file,true);
-            if (parts[0].equals("HEAD"))
-                processRequest(input2,file,false);
+            if (msg!=null) {
+                String[] parts = msg.split(" ");
+                StringBuilder file = new StringBuilder(parts[1]);
+                File archivo = new File(parts[1]);
+                if (file.charAt(0) == '/')
+                    file.insert(0, '.');
+                FileInputStream input2 = new FileInputStream(file.toString());
+                if (parts[0].equals("GET"))
+                    processRequest(input2, file, true);
+                if (parts[0].equals("HEAD"))
+                    processRequest(input2, file, false);
+                else if (!archivo.exists())
+                    processNotFound(archivo);
+                else
+                    processBadRequest(input2, file);
+            }
+
         } catch (SocketTimeoutException e) {
             System.err.println("Nothing received in 300 secs");
         } catch (Exception e) {
@@ -61,7 +69,6 @@ public class ServerThread extends Thread {
     }
     public void selectContentType(StringBuilder file,OutputStream output) throws IOException {
         String[] particion = file.toString().split("\\.");
-        System.out.println(particion[2]);
         switch (particion[2]) {
             case "html" -> output.write(("Content-Type: text/html\r\n").getBytes());
             case "txt" -> output.write(("Content-Type: text/plain\r\n").getBytes());
@@ -69,6 +76,20 @@ public class ServerThread extends Thread {
             case "png" -> output.write(("Content-Type: image/png\r\n").getBytes());
             default -> output.write(("Content-Type: application/octet-stream\r\n").getBytes());
         }
+    }
+    public void processBadRequest(FileInputStream input, StringBuilder file) throws IOException {
+        OutputStream clientOutput = socket.getOutputStream();
+        File recover = new File(String.valueOf(file));
+        /*if (!recover.exists())
+            recover = new File("p1-files/error404.html");*/
+        clientOutput.write(("HTTP/1.0 400 Bad Request\r\n").getBytes());
+        clientOutput.write(("\r\n").getBytes());
+    }
+    public void processNotFound(File file) throws IOException {
+        OutputStream clientOutput = socket.getOutputStream();
+        file = new File("p1-files/error404.html");
+        clientOutput.write(("HTTP/1.0 404 Not Found\r\n").getBytes());
+        clientOutput.write(("\r\n").getBytes());
     }
 }
 
