@@ -28,6 +28,8 @@ public class ServerThread extends Thread {
             System.out.println(input2.getChannel().size());
             if (parts[0].equals("GET"))
                 processGet(input2,file);
+            if (parts[0].equals("HEAD"))
+                processHead(input2,file);
         } catch (SocketTimeoutException e) {
             System.err.println("Nothing received in 300 secs");
         } catch (Exception e) {
@@ -57,7 +59,9 @@ public class ServerThread extends Thread {
         clientOutput.flush();
         clientOutput.close();
     }
-
+    public void processHead(FileInputStream input, StringBuilder file) throws IOException{
+        
+    }
     public void selectContentType(StringBuilder file,OutputStream output) throws IOException {
         String[] particion = file.toString().split("\\.");
         System.out.println(particion[2]);
