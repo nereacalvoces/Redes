@@ -1,14 +1,14 @@
 package es.udc.redes.webserver;
+import java.io.IOException;
+import java.net.*;
 
-import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+/** Multithread Web server. */
 
 public class WebServer {
-    public static void main(String[] argv) throws IOException {
+
+    public static void main(String argv[]) throws IOException {
         if (argv.length != 1) {
-            System.err.println("Format: es.udc.redes.tutorial.tcp.server.TcpServer <port>");
+            System.err.println("Format: es.udc.redes.webserver.WebServer <port>");
             System.exit(-1);
         }
         ServerSocket socketServidor = null;
