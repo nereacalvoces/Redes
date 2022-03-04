@@ -22,20 +22,20 @@ public class ServerThread extends Thread {
             if (msg!=null) {
                 String[] parts = msg.split(" ");
                 StringBuilder file = new StringBuilder(parts[1]);
-                File archivo = new File(parts[1]);
+                File archivo = new File("p1-files"+parts[1]);
+                File archivoError = new File("p1-files/error400.html");
                 if (file.charAt(0) == '/')
                     file.insert(0, '.');
-                FileInputStream input2 = new FileInputStream(file.toString());
+                FileInputStream input2 = new FileInputStream(archivo.toString());
                 if (parts[0].equals("GET"))
                     processRequest(input2, file, true);
                 if (parts[0].equals("HEAD"))
                     processRequest(input2, file, false);
-                else if (!archivo.exists())
-                    processNotFound(archivo);
+                if ((!parts[0].equals("GET")) && (!parts[0].equals("HEAD")))
+                    processBadRequest(archivoError);
                 else
-                    processBadRequest(input2, file);
+                     processNotFound(archivo);
             }
-
         } catch (SocketTimeoutException e) {
             System.err.println("Nothing received in 300 secs");
         } catch (Exception e) {
@@ -49,12 +49,17 @@ public class ServerThread extends Thread {
             }
         }
     }
-    public void processRequest(FileInputStream input, StringBuilder file,boolean writer) throws IOException {
+
+    public String getDate(){
         DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
         Date date = new Date();
+        return dateFormat.format(date);
+
+    }
+    public void processRequest(FileInputStream input, StringBuilder file,boolean writer) throws IOException {
         OutputStream clientOutput = socket.getOutputStream();
         clientOutput.write(("HTTP/1.0 200 OK\r\n").getBytes());
-        clientOutput.write(("Date: " + dateFormat.format(date) + "\r\n").getBytes());
+        clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
         clientOutput.write(("Server: WebServer_695\r\n").getBytes());
         clientOutput.write(("Content-Length: "+input.getChannel().size()+"\r\n").getBytes());
         selectContentType(file,clientOutput);
@@ -77,13 +82,19 @@ public class ServerThread extends Thread {
             default -> output.write(("Content-Type: application/octet-stream\r\n").getBytes());
         }
     }
-    public void processBadRequest(FileInputStream input, StringBuilder file) throws IOException {
+    public void processBadRequest(File file) throws IOException {
+        FileInputStream input = new FileInputStream(file.toString());
         OutputStream clientOutput = socket.getOutputStream();
-        File recover = new File(String.valueOf(file));
-        /*if (!recover.exists())
-            recover = new File("p1-files/error404.html");*/
         clientOutput.write(("HTTP/1.0 400 Bad Request\r\n").getBytes());
+        clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
+        clientOutput.write(("Content-Length: "+input.getChannel().size()+"\r\n").getBytes());
+        clientOutput.write(("Content-Type: text/html\r\n").getBytes());
         clientOutput.write(("\r\n").getBytes());
+        int c;
+        while ((c = input.read()) != -1)
+            clientOutput.write(c);
+        clientOutput.flush();
+        clientOutput.close();
     }
     public void processNotFound(File file) throws IOException {
         OutputStream clientOutput = socket.getOutputStream();
