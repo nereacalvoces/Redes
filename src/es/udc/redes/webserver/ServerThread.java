@@ -21,20 +21,18 @@ public class ServerThread extends Thread {
             String msg = input.readLine();
             if (msg!=null) {
                 String[] parts = msg.split(" ");
-                StringBuilder file = new StringBuilder(parts[1]);
                 File archivo = new File("p1-files"+parts[1]);
                 File archivoError = new File("p1-files/error400.html");
-                if (file.charAt(0) == '/')
-                    file.insert(0, '.');
+                File archivoNotFound = new File("p1-files/error404.html");
                 FileInputStream input2 = new FileInputStream(archivo.toString());
-                if (parts[0].equals("GET"))
-                    processRequest(input2, file, true);
-                if (parts[0].equals("HEAD"))
-                    processRequest(input2, file, false);
-                if ((!parts[0].equals("GET")) && (!parts[0].equals("HEAD")))
+                if ((parts[0].equals("GET")) && archivo.exists())
+                    processRequest(input2, archivo, true);
+                else if ((parts[0].equals("HEAD")) && archivo.exists())
+                    processRequest(input2, archivo, false);
+                else if ((!parts[0].equals("GET")) && (!parts[0].equals("HEAD")))
                     processBadRequest(archivoError);
-                else
-                     processNotFound(archivo);
+                else if (!archivo.exists())
+                    processNotFound(archivoNotFound);
             }
         } catch (SocketTimeoutException e) {
             System.err.println("Nothing received in 300 secs");
@@ -54,14 +52,13 @@ public class ServerThread extends Thread {
         DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
         Date date = new Date();
         return dateFormat.format(date);
-
     }
-    public void processRequest(FileInputStream input, StringBuilder file,boolean writer) throws IOException {
+    public void processRequest(FileInputStream input, File file,boolean writer) throws IOException {
         OutputStream clientOutput = socket.getOutputStream();
         clientOutput.write(("HTTP/1.0 200 OK\r\n").getBytes());
         clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
         clientOutput.write(("Server: WebServer_695\r\n").getBytes());
-        clientOutput.write(("Content-Length: "+input.getChannel().size()+"\r\n").getBytes());
+        clientOutput.write(("Content-Length: "+file.length()+"\r\n").getBytes());
         selectContentType(file,clientOutput);
         clientOutput.write(("\r\n").getBytes());
         if (writer) {
@@ -72,9 +69,9 @@ public class ServerThread extends Thread {
             clientOutput.flush();
             clientOutput.close();
     }
-    public void selectContentType(StringBuilder file,OutputStream output) throws IOException {
+    public void selectContentType(File file,OutputStream output) throws IOException {
         String[] particion = file.toString().split("\\.");
-        switch (particion[2]) {
+        switch (particion[1]) {
             case "html" -> output.write(("Content-Type: text/html\r\n").getBytes());
             case "txt" -> output.write(("Content-Type: text/plain\r\n").getBytes());
             case "gif" -> output.write(("Content-Type: image/gif\r\n").getBytes());
@@ -97,10 +94,18 @@ public class ServerThread extends Thread {
         clientOutput.close();
     }
     public void processNotFound(File file) throws IOException {
+        FileInputStream input = new FileInputStream(file.toString());
         OutputStream clientOutput = socket.getOutputStream();
-        file = new File("p1-files/error404.html");
         clientOutput.write(("HTTP/1.0 404 Not Found\r\n").getBytes());
+        clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
+        clientOutput.write(("Content-Length: "+input.getChannel().size()+"\r\n").getBytes());
+        clientOutput.write(("Content-Type: text/html\r\n").getBytes());
         clientOutput.write(("\r\n").getBytes());
+        int c;
+        while ((c = input.read()) != -1)
+            clientOutput.write(c);
+        clientOutput.flush();
+        clientOutput.close();
     }
 }
 
