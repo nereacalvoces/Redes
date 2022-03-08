@@ -25,14 +25,19 @@ public class ServerThread extends Thread {
                 File archivoError = new File("p1-files/error400.html");
                 File archivoNotFound = new File("p1-files/error404.html");
                 FileInputStream input2 = new FileInputStream(archivo.toString());
+                if (!archivo.exists())
+                    try {
+                        processNotValidRequests(archivoNotFound,false);
+                    }
+                    catch (Exception e) {
+                        processNotValidRequests(archivoNotFound,false);
+                    }
                 if ((parts[0].equals("GET")) && archivo.exists())
                     processRequest(input2, archivo, true);
                 else if ((parts[0].equals("HEAD")) && archivo.exists())
                     processRequest(input2, archivo, false);
                 else if ((!parts[0].equals("GET")) && (!parts[0].equals("HEAD")))
-                    processBadRequest(archivoError);
-                else if (!archivo.exists())
-                    processNotFound(archivoNotFound);
+                    processNotValidRequests(archivoError,true);
             }
         } catch (SocketTimeoutException e) {
             System.err.println("Nothing received in 300 secs");
@@ -79,26 +84,15 @@ public class ServerThread extends Thread {
             default -> output.write(("Content-Type: application/octet-stream\r\n").getBytes());
         }
     }
-    public void processBadRequest(File file) throws IOException {
+    public void processNotValidRequests(File file,boolean found) throws IOException{
         FileInputStream input = new FileInputStream(file.toString());
         OutputStream clientOutput = socket.getOutputStream();
-        clientOutput.write(("HTTP/1.0 400 Bad Request\r\n").getBytes());
+        if(found)
+            clientOutput.write(("HTTP/1.0 400 Bad Request\r\n").getBytes());
+        else
+            clientOutput.write(("HTTP/1.0 404 Not Found\r\n").getBytes());
         clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
-        clientOutput.write(("Content-Length: "+input.getChannel().size()+"\r\n").getBytes());
-        clientOutput.write(("Content-Type: text/html\r\n").getBytes());
-        clientOutput.write(("\r\n").getBytes());
-        int c;
-        while ((c = input.read()) != -1)
-            clientOutput.write(c);
-        clientOutput.flush();
-        clientOutput.close();
-    }
-    public void processNotFound(File file) throws IOException {
-        FileInputStream input = new FileInputStream(file.toString());
-        OutputStream clientOutput = socket.getOutputStream();
-        clientOutput.write(("HTTP/1.0 404 Not Found\r\n").getBytes());
-        clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
-        clientOutput.write(("Content-Length: "+input.getChannel().size()+"\r\n").getBytes());
+        clientOutput.write(("Content-Length: "+file.length()+"\r\n").getBytes());
         clientOutput.write(("Content-Type: text/html\r\n").getBytes());
         clientOutput.write(("\r\n").getBytes());
         int c;
