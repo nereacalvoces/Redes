@@ -25,6 +25,7 @@ public class ServerThread extends Thread {
                 File archivoError = new File("p1-files/error400.html");
                 File archivoNotFound = new File("p1-files/error404.html");
                 FileInputStream input2 = new FileInputStream(archivo.toString());
+                System.out.println(msg);
                 if (!archivo.exists())
                     try {
                         processNotValidRequests(archivoNotFound,false);
@@ -58,15 +59,29 @@ public class ServerThread extends Thread {
         Date date = new Date();
         return dateFormat.format(date);
     }
+    public String getDateModified(File file){
+        Date fechaModi = new Date(file.lastModified());
+        DateFormat formato = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
+        return formato.format(fechaModi);
+    }
     public void processRequest(FileInputStream input, File file,boolean writer) throws IOException {
         OutputStream clientOutput = socket.getOutputStream();
+        boolean isModifiedSince = true;
+        long modifiedSince;
+
+        /*if(modifiedSince>file.lastModified()) {
+            clientOutput.write(("HTTP/1.0 304 Not Modified\r\n").getBytes());
+            isModifiedSince = false;
+        }*/
+
         clientOutput.write(("HTTP/1.0 200 OK\r\n").getBytes());
         clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
         clientOutput.write(("Server: WebServer_695\r\n").getBytes());
         clientOutput.write(("Content-Length: "+file.length()+"\r\n").getBytes());
         selectContentType(file,clientOutput);
+        clientOutput.write(("Last-Modified:"+getDateModified(file)+"\r\n").getBytes());
         clientOutput.write(("\r\n").getBytes());
-        if (writer) {
+        if (writer && isModifiedSince) {
             int c;
             while ((c = input.read()) != -1)
                 clientOutput.write(c);
@@ -94,6 +109,7 @@ public class ServerThread extends Thread {
         clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
         clientOutput.write(("Content-Length: "+file.length()+"\r\n").getBytes());
         clientOutput.write(("Content-Type: text/html\r\n").getBytes());
+        clientOutput.write(("Last-Modified:"+getDateModified(file)+"\r\n").getBytes());
         clientOutput.write(("\r\n").getBytes());
         int c;
         while ((c = input.read()) != -1)
