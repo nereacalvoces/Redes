@@ -17,15 +17,14 @@ public class ServerThread extends Thread {
 
     public void run() {
         try {
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            String msg = input.readLine();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String msg = reader.readLine();
             if (msg!=null) {
                 String[] parts = msg.split(" ");
                 File archivo = new File("p1-files"+parts[1]);
                 File archivoError = new File("p1-files/error400.html");
                 File archivoNotFound = new File("p1-files/error404.html");
                 FileInputStream input2 = new FileInputStream(archivo.toString());
-                System.out.println(msg);
                 if (!archivo.exists())
                     try {
                         processNotValidRequests(archivoNotFound,false);
@@ -34,9 +33,9 @@ public class ServerThread extends Thread {
                         processNotValidRequests(archivoNotFound,false);
                     }
                 if ((parts[0].equals("GET")) && archivo.exists())
-                    processRequest(input2, archivo, true);
+                    processRequest(reader,input2, archivo, true);
                 else if ((parts[0].equals("HEAD")) && archivo.exists())
-                    processRequest(input2, archivo, false);
+                    processRequest(reader,input2, archivo, false);
                 else if ((!parts[0].equals("GET")) && (!parts[0].equals("HEAD")))
                     processNotValidRequests(archivoError,true);
             }
@@ -64,17 +63,25 @@ public class ServerThread extends Thread {
         DateFormat formato = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
         return formato.format(fechaModi);
     }
-    public void processRequest(FileInputStream input, File file,boolean writer) throws IOException {
+    public void processRequest(BufferedReader reader,FileInputStream input, File file,boolean writer) throws IOException {
         OutputStream clientOutput = socket.getOutputStream();
         boolean isModifiedSince = true;
+        DateFormat dateFormat = new SimpleDateFormat("SSSSSS");
+        Date date = new Date();
         long modifiedSince;
-
-        /*if(modifiedSince>file.lastModified()) {
+        while(!reader.readLine().equals("")) {
+            if (reader.readLine().equals("If-Modified-Since")){
+                modifiedSince = Long.parseLong(dateFormat.format(date));
+                 if (modifiedSince > file.lastModified()) {
+                     isModifiedSince = false;
+                     break;
+                 }
+            }
+        }
+        if (!isModifiedSince)
             clientOutput.write(("HTTP/1.0 304 Not Modified\r\n").getBytes());
-            isModifiedSince = false;
-        }*/
-
-        clientOutput.write(("HTTP/1.0 200 OK\r\n").getBytes());
+        else
+            clientOutput.write(("HTTP/1.0 200 OK\r\n").getBytes());
         clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
         clientOutput.write(("Server: WebServer_695\r\n").getBytes());
         clientOutput.write(("Content-Length: "+file.length()+"\r\n").getBytes());
