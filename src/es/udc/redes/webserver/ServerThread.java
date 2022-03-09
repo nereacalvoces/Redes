@@ -25,6 +25,7 @@ public class ServerThread extends Thread {
                 File archivoError = new File("p1-files/error400.html");
                 File archivoNotFound = new File("p1-files/error404.html");
                 FileInputStream input2 = new FileInputStream(archivo.toString());
+                System.out.println(msg);
                 if (!archivo.exists())
                     try {
                         processNotValidRequests(archivoNotFound,false);
@@ -78,8 +79,9 @@ public class ServerThread extends Thread {
                  }
             }
         }
-        if (!isModifiedSince)
+        if (!isModifiedSince) {
             clientOutput.write(("HTTP/1.0 304 Not Modified\r\n").getBytes());
+        }
         else
             clientOutput.write(("HTTP/1.0 200 OK\r\n").getBytes());
         clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
@@ -88,7 +90,7 @@ public class ServerThread extends Thread {
         selectContentType(file,clientOutput);
         clientOutput.write(("Last-Modified:"+getDateModified(file)+"\r\n").getBytes());
         clientOutput.write(("\r\n").getBytes());
-        if (writer && isModifiedSince) {
+        if (writer) {
             int c;
             while ((c = input.read()) != -1)
                 clientOutput.write(c);
@@ -125,6 +127,5 @@ public class ServerThread extends Thread {
         clientOutput.close();
     }
 }
-
 
 
