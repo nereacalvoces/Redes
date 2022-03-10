@@ -1,5 +1,6 @@
 package es.udc.redes.webserver;
 
+import javax.naming.NameNotFoundException;
 import java.net.*;
 import java.io.*;
 import java.text.DateFormat;
@@ -24,26 +25,19 @@ public class ServerThread extends Thread {
                 File archivo = new File("p1-files"+parts[1]);
                 File archivoError = new File("p1-files/error400.html");
                 File archivoNotFound = new File("p1-files/error404.html");
-                FileInputStream input2 = new FileInputStream(archivo.toString());
+                FileInputStream input = new FileInputStream(archivo.toString());
                 System.out.println(msg);
-                if (!archivo.exists())
-                    try {
-                        processNotValidRequests(archivoNotFound,false);
-                    }
-                    catch (Exception e) {
-                        processNotValidRequests(archivoNotFound,false);
-                    }
-                if ((parts[0].equals("GET")) && archivo.exists())
-                    processRequest(reader,input2, archivo, true);
-                else if ((parts[0].equals("HEAD")) && archivo.exists())
-                    processRequest(reader,input2, archivo, false);
-                else if ((!parts[0].equals("GET")) && (!parts[0].equals("HEAD")))
-                    processNotValidRequests(archivoError,true);
+                    if ((parts[0].equals("GET")) && archivo.exists())
+                        processRequest(reader, input, archivo, true);
+                    else if ((parts[0].equals("HEAD")) && archivo.exists())
+                        processRequest(reader, input, archivo, false);
+                    else if ((!parts[0].equals("GET")) && (!parts[0].equals("HEAD")))
+                        processNotValidRequests(archivoError, true,true);
             }
         } catch (SocketTimeoutException e) {
             System.err.println("Nothing received in 300 secs");
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            System.err.println("Error: " + e.getClass());
         }
         finally {
             try {
@@ -108,7 +102,7 @@ public class ServerThread extends Thread {
             default -> output.write(("Content-Type: application/octet-stream\r\n").getBytes());
         }
     }
-    public void processNotValidRequests(File file,boolean found) throws IOException{
+    public void processNotValidRequests(File file,boolean found,boolean writer) throws IOException{
         FileInputStream input = new FileInputStream(file.toString());
         OutputStream clientOutput = socket.getOutputStream();
         if(found)
@@ -120,11 +114,13 @@ public class ServerThread extends Thread {
         clientOutput.write(("Content-Type: text/html\r\n").getBytes());
         clientOutput.write(("Last-Modified:"+getDateModified(file)+"\r\n").getBytes());
         clientOutput.write(("\r\n").getBytes());
-        int c;
-        while ((c = input.read()) != -1)
-            clientOutput.write(c);
-        clientOutput.flush();
-        clientOutput.close();
+        if (writer) {
+            int c;
+            while ((c = input.read()) != -1)
+                clientOutput.write(c);
+            clientOutput.flush();
+            clientOutput.close();
+        }
     }
 }
 
