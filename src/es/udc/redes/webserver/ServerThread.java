@@ -25,6 +25,7 @@ public class ServerThread extends Thread {
                 File archivo = new File("p1-files"+parts[1]);
                 File archivoError = new File("p1-files/error400.html");
                 File archivoNotFound = new File("p1-files/error404.html");
+                try {
                 FileInputStream input = new FileInputStream(archivo.toString());
                 System.out.println(msg);
                     if ((parts[0].equals("GET")) && archivo.exists())
@@ -33,6 +34,10 @@ public class ServerThread extends Thread {
                         processRequest(reader, input, archivo, false);
                     else if ((!parts[0].equals("GET")) && (!parts[0].equals("HEAD")))
                         processNotValidRequests(archivoError, true,true);
+                }
+                catch (FileNotFoundException e) {
+                    processNotValidRequests(archivoNotFound,false, !parts[0].equals("HEAD"));
+                }
             }
         } catch (SocketTimeoutException e) {
             System.err.println("Nothing received in 300 secs");
