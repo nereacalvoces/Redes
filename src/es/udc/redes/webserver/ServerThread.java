@@ -83,12 +83,7 @@ public class ServerThread extends Thread {
         }
         else
             clientOutput.write(("HTTP/1.0 200 OK\r\n").getBytes());
-        clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
-        clientOutput.write(("Server: WebServer_695\r\n").getBytes());
-        clientOutput.write(("Content-Length: "+file.length()+"\r\n").getBytes());
-        selectContentType(file,clientOutput);
-        clientOutput.write(("Last-Modified:"+getDateModified(file)+"\r\n").getBytes());
-        clientOutput.write(("\r\n").getBytes());
+        setValues(clientOutput,file);
         if (writer) {
             int c;
             while ((c = input.read()) != -1)
@@ -114,11 +109,7 @@ public class ServerThread extends Thread {
             clientOutput.write(("HTTP/1.0 400 Bad Request\r\n").getBytes());
         else
             clientOutput.write(("HTTP/1.0 404 Not Found\r\n").getBytes());
-        clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
-        clientOutput.write(("Content-Length: "+file.length()+"\r\n").getBytes());
-        clientOutput.write(("Content-Type: text/html\r\n").getBytes());
-        clientOutput.write(("Last-Modified:"+getDateModified(file)+"\r\n").getBytes());
-        clientOutput.write(("\r\n").getBytes());
+        setValues(clientOutput,file);
         if (writer) {
             int c;
             while ((c = input.read()) != -1)
@@ -126,6 +117,14 @@ public class ServerThread extends Thread {
             clientOutput.flush();
             clientOutput.close();
         }
+    }
+    public void setValues(OutputStream clientOutput, File file) throws IOException {
+        clientOutput.write(("Date: " + getDate()+ "\r\n").getBytes());
+        clientOutput.write(("Server: WebServer_695\r\n").getBytes());
+        clientOutput.write(("Content-Length: "+file.length()+"\r\n").getBytes());
+        selectContentType(file,clientOutput);
+        clientOutput.write(("Last-Modified:"+getDateModified(file)+"\r\n").getBytes());
+        clientOutput.write(("\r\n").getBytes());
     }
 }
 
