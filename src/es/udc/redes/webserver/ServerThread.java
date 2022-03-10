@@ -1,6 +1,5 @@
 package es.udc.redes.webserver;
 
-import javax.naming.NameNotFoundException;
 import java.net.*;
 import java.io.*;
 import java.text.DateFormat;
@@ -27,7 +26,6 @@ public class ServerThread extends Thread {
                 File archivoNotFound = new File("p1-files/error404.html");
                 try {
                 FileInputStream input = new FileInputStream(archivo.toString());
-                System.out.println(msg);
                     if ((parts[0].equals("GET")) && archivo.exists())
                         processRequest(reader, input, archivo, true);
                     else if ((parts[0].equals("HEAD")) && archivo.exists())
@@ -42,7 +40,7 @@ public class ServerThread extends Thread {
         } catch (SocketTimeoutException e) {
             System.err.println("Nothing received in 300 secs");
         } catch (Exception e) {
-            System.err.println("Error: " + e.getClass());
+            System.err.println("Error: " + e.getMessage());
         }
         finally {
             try {
