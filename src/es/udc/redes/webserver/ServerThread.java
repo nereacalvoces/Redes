@@ -1,10 +1,7 @@
 package es.udc.redes.webserver;
 
-import jdk.swing.interop.SwingInterOpUtils;
-
 import java.net.*;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -56,17 +53,6 @@ public class ServerThread extends Thread {
         }
     }
 
-    public String getDate(){
-        DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
-        Date date = new Date();
-        return dateFormat.format(date);
-    }
-    public String getDateModified(File file){
-        Date fechaModi = new Date(file.lastModified());
-        DateFormat formato = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
-        return formato.format(fechaModi);
-    }
-    //public void dateToSecs(String )
     public void processRequest(BufferedReader reader,FileInputStream input, File file,boolean writer) throws IOException, ParseException {
         OutputStream clientOutput = socket.getOutputStream();
         boolean isModifiedSince = true;Date modifiedSince;
@@ -130,6 +116,16 @@ public class ServerThread extends Thread {
         selectContentType(file,clientOutput);
         clientOutput.write(("Last-Modified:"+(getDateModified(file))+"\r\n").getBytes());
         clientOutput.write(("\r\n").getBytes());
+    }
+    public String getDate(){
+        DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
+        Date date = new Date();
+        return dateFormat.format(date);
+    }
+    public String getDateModified(File file){
+        Date fechaModi = new Date(file.lastModified());
+        DateFormat formato = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
+        return formato.format(fechaModi);
     }
 }
 
