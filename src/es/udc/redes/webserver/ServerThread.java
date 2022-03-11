@@ -57,12 +57,12 @@ public class ServerThread extends Thread {
     }
 
     public String getDate(){
-        DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
+        DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
         Date date = new Date();
         return dateFormat.format(date);
     }
     public String getDateModified(File file){
-        Date fechaModi = new Date(file.lastModified()+12*60*60*1000);
+        Date fechaModi = new Date(file.lastModified());
         DateFormat formato = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
         return formato.format(fechaModi);
     }
@@ -74,23 +74,18 @@ public class ServerThread extends Thread {
         while(!lineaPeticion.equals("")) {
             String[] parts = lineaPeticion.split(": ");
             if (parts[0].equals("If-Modified-Since")){
-                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
+                DateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
                 Date fechaUltimaMod = new Date(file.lastModified());
-                System.out.println("FECHA DE ULTIMA MOD");
-                System.out.println(fechaUltimaMod);
-                System.out.println("FECHA DE IF MODIFIED SINCE");
                 modifiedSince = sdf.parse(parts[1]);
-                System.out.println(modifiedSince);
-                if (modifiedSince.after(fechaUltimaMod)) {
+                if (!fechaUltimaMod.before(modifiedSince)) {
                      isModifiedSince = false;
                      break;
                  }
             }
             lineaPeticion = reader.readLine();
         }
-        if (!isModifiedSince) {
+        if (!isModifiedSince)
             clientOutput.write(("HTTP/1.0 304 Not Modified\r\n").getBytes());
-        }
         else
             clientOutput.write(("HTTP/1.0 200 OK\r\n").getBytes());
         setValues(clientOutput,file);
