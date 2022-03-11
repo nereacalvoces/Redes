@@ -1,10 +1,15 @@
 package es.udc.redes.webserver;
 
+import jdk.swing.interop.SwingInterOpUtils;
+
 import java.net.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 
 public class ServerThread extends Thread {
@@ -57,24 +62,31 @@ public class ServerThread extends Thread {
         return dateFormat.format(date);
     }
     public String getDateModified(File file){
-        Date fechaModi = new Date(file.lastModified());
-        DateFormat formato = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
+        Date fechaModi = new Date(file.lastModified()+12*60*60*1000);
+        DateFormat formato = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
         return formato.format(fechaModi);
     }
-    public void processRequest(BufferedReader reader,FileInputStream input, File file,boolean writer) throws IOException {
+    //public void dateToSecs(String )
+    public void processRequest(BufferedReader reader,FileInputStream input, File file,boolean writer) throws IOException, ParseException {
         OutputStream clientOutput = socket.getOutputStream();
-        boolean isModifiedSince = true;
-        DateFormat dateFormat = new SimpleDateFormat("SSSSSS");
-        Date date = new Date();
-        long modifiedSince;
-        while(!reader.readLine().equals("")) {
-            if (reader.readLine().equals("If-Modified-Since")){
-                modifiedSince = Long.parseLong(dateFormat.format(date));
-                 if (modifiedSince > file.lastModified()) {
+        boolean isModifiedSince = true;Date modifiedSince;
+        String lineaPeticion = reader.readLine();
+        while(!lineaPeticion.equals("")) {
+            String[] parts = lineaPeticion.split(": ");
+            if (parts[0].equals("If-Modified-Since")){
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
+                Date fechaUltimaMod = new Date(file.lastModified());
+                System.out.println("FECHA DE ULTIMA MOD");
+                System.out.println(fechaUltimaMod);
+                System.out.println("FECHA DE IF MODIFIED SINCE");
+                modifiedSince = sdf.parse(parts[1]);
+                System.out.println(modifiedSince);
+                if (modifiedSince.after(fechaUltimaMod)) {
                      isModifiedSince = false;
                      break;
                  }
             }
+            lineaPeticion = reader.readLine();
         }
         if (!isModifiedSince) {
             clientOutput.write(("HTTP/1.0 304 Not Modified\r\n").getBytes());
@@ -82,7 +94,7 @@ public class ServerThread extends Thread {
         else
             clientOutput.write(("HTTP/1.0 200 OK\r\n").getBytes());
         setValues(clientOutput,file);
-        if (writer) {
+        if (writer && isModifiedSince) {
             int c;
             while ((c = input.read()) != -1)
                 clientOutput.write(c);
@@ -121,7 +133,7 @@ public class ServerThread extends Thread {
         clientOutput.write(("Server: WebServer_695\r\n").getBytes());
         clientOutput.write(("Content-Length: "+file.length()+"\r\n").getBytes());
         selectContentType(file,clientOutput);
-        clientOutput.write(("Last-Modified:"+getDateModified(file)+"\r\n").getBytes());
+        clientOutput.write(("Last-Modified:"+(getDateModified(file))+"\r\n").getBytes());
         clientOutput.write(("\r\n").getBytes());
     }
 }
