@@ -56,9 +56,9 @@ public class ServerThread extends Thread {
     public void processRequest(BufferedReader reader,FileInputStream input, File file,boolean writer) throws IOException, ParseException {
         OutputStream clientOutput = socket.getOutputStream();
         boolean isModifiedSince = true;Date modifiedSince;
-        String lineaPeticion = reader.readLine();
-        while(!lineaPeticion.equals("")) {
-            String[] parts = lineaPeticion.split(": ");
+        String petLine = reader.readLine();
+        while(!petLine.equals("")) {
+            String[] parts = petLine.split(": ");
             if (parts[0].equals("If-Modified-Since")){
                 DateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
                 Date fechaUltimaMod = new Date(file.lastModified());
@@ -68,7 +68,7 @@ public class ServerThread extends Thread {
                      break;
                  }
             }
-            lineaPeticion = reader.readLine();
+            petLine = reader.readLine();
         }
         if (!isModifiedSince)
             clientOutput.write(("HTTP/1.0 304 Not Modified\r\n").getBytes());
@@ -118,13 +118,13 @@ public class ServerThread extends Thread {
         clientOutput.write(("\r\n").getBytes());
     }
     public String getDate(){
-        DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
+        DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("en","US"));
         Date date = new Date();
         return dateFormat.format(date);
     }
     public String getDateModified(File file){
         Date fechaModi = new Date(file.lastModified());
-        DateFormat formato = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
+        DateFormat formato = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("en","US"));
         return formato.format(fechaModi);
     }
 }

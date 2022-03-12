@@ -6,7 +6,7 @@ import java.net.*;
 
 public class WebServer {
 
-    public static void main(String argv[]) throws IOException {
+    public static void main(String[] argv) throws IOException {
         if (argv.length != 1) {
             System.err.println("Format: es.udc.redes.webserver.WebServer <port>");
             System.exit(-1);
