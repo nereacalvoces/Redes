@@ -60,13 +60,11 @@ public class ServerThread extends Thread {
         while(!petLine.equals("")) {
             String[] parts = petLine.split(": ");
             if (parts[0].equals("If-Modified-Since")){
-                DateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("eng","UK"));
+                DateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z",new Locale("en","US"));
                 Date fechaUltimaMod = new Date(file.lastModified());
                 modifiedSince = sdf.parse(parts[1]);
-                if (!fechaUltimaMod.before(modifiedSince)) {
+                if (!fechaUltimaMod.before(modifiedSince))
                      isModifiedSince = false;
-                     break;
-                 }
             }
             petLine = reader.readLine();
         }
@@ -75,7 +73,7 @@ public class ServerThread extends Thread {
         else
             clientOutput.write(("HTTP/1.0 200 OK\r\n").getBytes());
         setValues(clientOutput,file);
-        if (writer && isModifiedSince) {
+        if (writer) {
             int c;
             while ((c = input.read()) != -1)
                 clientOutput.write(c);
