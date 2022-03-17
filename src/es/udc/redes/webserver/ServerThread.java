@@ -86,8 +86,8 @@ public class ServerThread extends Thread {
             clientOutput.close();
     }
     public void selectContentType(File file,OutputStream output) throws IOException {
-        String[] particion = file.toString().split("\\.");
-        switch (particion[1]) {
+        String[] parts = file.toString().split("\\.");
+        switch (parts[1]) {
             case "html" -> output.write(("Content-Type: text/html\r\n").getBytes());
             case "txt" -> output.write(("Content-Type: text/plain\r\n").getBytes());
             case "gif" -> output.write(("Content-Type: image/gif\r\n").getBytes());
