@@ -20,6 +20,9 @@ public class ServerThread extends Thread {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String msg = reader.readLine();
+            System.out.println("SERVER: Received " + msg + " from "
+                                + socket.getInetAddress().toString() + ":"
+                                + socket.getPort());
             if (msg!=null) {
                 String[] parts = msg.split(" ");
                 File archivo = new File("p1-files"+parts[1]);
